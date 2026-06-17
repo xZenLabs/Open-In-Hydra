@@ -7,7 +7,7 @@ Enhanced search engine integration so Reddit links on search result pages (Googl
 ## Downloads
 Safari extension to run user script (free): https://apps.apple.com/us/app/userscripts/id1463298887  
   
-Userscript code: [Open In Hydra Userscript][https://github.com/xZenLabs/Open-In-Hydra/releases/latest]
+Userscript code: [Open In Hydra Userscript](https://github.com/xZenLabs/Open-In-Hydra/releases/latest)
 
 ## How to install
 
@@ -21,5 +21,6 @@ Userscript code: [Open In Hydra Userscript][https://github.com/xZenLabs/Open-In-
 ## Usage
 Open any reddit link in Safari, you should see a pop up asking if you want to "Open this page in Hydra"
 
+<img width="1168" height="444" alt="IMG_3114" src="https://github.com/user-attachments/assets/f7882242-58d7-42bf-a120-b08675e693cc" />
 
 Tested on iOS 26
