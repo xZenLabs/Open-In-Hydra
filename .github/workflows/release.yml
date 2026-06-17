@@ -1,0 +1,56 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - open-in-hydra.user.js
+      - .github/workflows/release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish userscript release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read userscript version
+        id: version
+        shell: bash
+        run: |
+          version="$(awk '$2 == "@version" { print $3; exit }' open-in-hydra.user.js)"
+
+          if [[ -z "$version" ]]; then
+            echo "Could not find @version in open-in-hydra.user.js" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release edit "$VERSION" \
+              --title "$VERSION" \
+              --target "$GITHUB_SHA" \
+              --latest
+          else
+            gh release create "$VERSION" \
+              --target "$GITHUB_SHA" \
+              --title "$VERSION" \
+              --notes "Open In Hydra userscript $VERSION" \
+              --latest
+          fi
+
+          gh release upload "$VERSION" open-in-hydra.user.js --clobber

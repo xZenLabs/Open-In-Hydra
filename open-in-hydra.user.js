@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         Open Apollo App
-// @version      1.1.0
+// @name         Open Hydra App
+// @version      2.0.0
 // @author       AnthonyGress
 // @match        *://*.reddit.com/*
 // @match        *://*.redditmedia.com/*
@@ -195,27 +195,28 @@
 // @match        *://*.google.co.zm/*
 // @match        *://*.google.co.zw/*
 // @match        *://*.google.cat/*
-// @downloadURL  https://gist.github.com/AnthonyGress/c04327abc6ff3bc45871468743f00341/raw/open-in-apollo.user.js
-// @updateURL    https://gist.github.com/AnthonyGress/c04327abc6ff3bc45871468743f00341/raw/open-in-apollo.user.js
-// @homepage     https://github.com/AnthonyGress/Open-In-Apollo/edit/main/open-in-apollo.user.js
+// @downloadURL  https://gist.github.com/AnthonyGress/c04327abc6ff3bc45871468743f00341/raw/open-in-Hydra.user.js
+// @updateURL    https://gist.github.com/AnthonyGress/c04327abc6ff3bc45871468743f00341/raw/open-in-Hydra.user.js
+// @homepage     https://github.com/AnthonyGress/Open-In-Hydra/edit/main/open-in-Hydra.user.js
 // ==/UserScript==
 
 // Note: Some search engines like DDG and Bing index redditmedia.com links
 const regexRedditIDs = /^(?:https?:\/\/)?(?:(?:www|amp|m|i)\.)?(?:(?:reddit\.com|redditmedia\.com))\/r\/(\w+)(?:\/comments\/(\w+)(?:\/\w+\/(\w+)(?:\/?.*?[?&]context=(\d+))?)?)?/i;
 
-function openInApollo() {
-	const apolloUrl = convertToApolloUrl(window.location.href);
-	if (apolloUrl) {
-		window.location.href = apolloUrl;
+function openInHydra() {
+	const HydraUrl = convertToHydraUrl(window.location.href);
+	if (HydraUrl) {
+		window.location.href = HydraUrl;
 	}
 }
 
-function convertToApolloUrl(urlString) {
+function convertToHydraUrl(urlString) {
 	const match = urlString.match(regexRedditIDs);
 	const url = new URL(urlString);
+	const makeHydraUrl = (redditUrl) => `hydra://openurl?url=${redditUrl}`;
 
 	if (url.pathname === '/' || url.pathname === '/?feed=home') {
-		return 'apollo://';
+		return makeHydraUrl('https://www.reddit.com/');
 	}
 
 	if (urlString.includes('/search')) {
@@ -223,40 +224,40 @@ function convertToApolloUrl(urlString) {
 	}
 
 	if (match) {
-		// Apollo doesn't support redditmedia.com links, so convert them to reddit.com
-		let hostname = url.hostname.replace('redditmedia.com', 'reddit.com');
+		// Hydra doesn't support redditmedia.com links, so convert them to reddit.com
+		const hostname = 'www.reddit.com';
 
 		// Comments and posts
 		if (url.pathname.includes('/comments/')) {
-			return `apollo://${hostname}${url.pathname}`;
+			return makeHydraUrl(`https://${hostname}${url.pathname}${url.search}`);
 		}
 
 		// Handle subreddit links with sorting suffixes
 		const sortingSuffixes = /\/(new|best|hot|top|rising)\/?$/;
 		const cleanPath = url.pathname.replace(sortingSuffixes, '');
-		return `apollo://${hostname}${cleanPath}`;
+		return makeHydraUrl(`https://${hostname}${cleanPath}${url.search}`);
 	}
 
 	return null;
 }
 
 function processSearchResults() {
-	const searchResults = document.querySelectorAll('a:not([data-apollo-listener-added])');
+	const searchResults = document.querySelectorAll('a:not([data-Hydra-listener-added])');
 	searchResults.forEach(link => {
 		const href = link.href;
 		if (!href) return;
-		
+
 		if (href.match(regexRedditIDs)) {
-			const apolloUrl = convertToApolloUrl(href);
-			if (apolloUrl) {
+			const HydraUrl = convertToHydraUrl(href);
+			if (HydraUrl) {
 				// Prevent duplicate listeners
-				link.setAttribute('data-apollo-listener-added', 'true');
+				link.setAttribute('data-Hydra-listener-added', 'true');
 
 				// Hook into 'click' instead of changing link.href so that long press still works.
 				link.addEventListener('click', (event) => {
 					event.preventDefault();
 					event.stopPropagation();
-					window.location.href = apolloUrl;
+					window.location.href = HydraUrl;
 				}, { capture: true });
 			}
 		}
@@ -264,7 +265,7 @@ function processSearchResults() {
 }
 
 if (window.location.hostname.includes('reddit.com') || window.location.hostname.includes('redditmedia.com')) {
-	openInApollo();
+	openInHydra();
 } else {
 	processSearchResults();
 
